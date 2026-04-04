@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="DarkStare AI"/>
+<meta name="theme-color" content="#050a0f"/>
+<meta name="description" content="DarkStare AI — Dual-AI Forex & Gold Trading Brain with live signals"/>
+<link rel="manifest" href="/manifest.json"/>
+<title>DarkStare AI — Trading Brain</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050a0f;--s1:#080f18;--s2:#0c1520;--s3:#111d2b;
+  --bd:#192a3e;--bd2:#213650;
+  --gold:#d4a017;--gold2:#f0c040;--glw:rgba(212,160,23,.12);
+  --grn:#18c463;--red:#e03030;--blu:#3a9edd;--pur:#9b6dff;--cya:#17c4c4;
+  --tx:#c5ddf0;--tx2:#6e90ad;--tx3:#334f66;
+  --fn:'Space Mono',monospace;--fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+  --r:4px;--r2:9px;--r3:14px;
+}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:13px;overflow:hidden}
+#root,.wrap{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes dotP{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.45)}}
+@keyframes signalIn{from{opacity:0;transform:scale(.96) translateY(7px)}to{opacity:1;transform:none}}
+@keyframes goldGlow{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 18px 3px rgba(212,160,23,.18)}}
+@keyframes scan{0%{top:-3px}100%{top:100%}}
+@keyframes introIn{from{opacity:0;transform:scale(.93) translateY(20px)}to{opacity:1;transform:none}}
+@keyframes floatUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.fu{animation:fadeUp .22s ease forwards}
+.spin{animation:spin .7s linear infinite;display:inline-block}
+/* Layout */
+.hdr{display:flex;align-items:center;gap:10px;padding:0 14px;height:52px;background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0;position:relative;overflow:hidden}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4}
+.logo{font-family:var(--fh);font-size:16px;font-weight:900;color:var(--gold);letter-spacing:.04em;white-space:nowrap}
+.logo-v{font-size:7.5px;font-family:var(--fn);color:var(--tx3);letter-spacing:.18em;display:block;margin-top:-2px}
+.hdr-r{margin-left:auto;display:flex;gap:6px;align-items:center}
+.spill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:8.5px;font-family:var(--fn);letter-spacing:.08em;border:1px solid}
+.sp-live{background:rgba(24,196,99,.06);border-color:rgba(24,196,99,.28);color:var(--grn)}
+.sp-busy{background:rgba(212,160,23,.06);border-color:rgba(212,160,23,.28);color:var(--gold)}
+.sp-idle{background:rgba(51,79,102,.06);border-color:rgba(51,79,102,.2);color:var(--tx3)}
+.ldot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:dotP 1.6s ease infinite;flex-shrink:0}
+.tkr{height:23px;background:var(--bg);border-bottom:1px solid var(--bd);overflow:hidden;flex-shrink:0}
+.tkr-i{display:flex;gap:24px;animation:ticker 55s linear infinite;white-space:nowrap;font-family:var(--fn);font-size:8.5px;padding:4px 12px;align-items:center}
+.body{display:flex;flex:1;overflow:hidden}
+.sbar{width:52px;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;padding:7px 0;gap:2px;flex-shrink:0}
+.nv{width:40px;height:43px;border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .14s;color:var(--tx3);user-select:none;border:1px solid transparent;-webkit-tap-highlight-color:transparent}
+.nv:hover{background:var(--s3);color:var(--tx2)}
+.nv.on{background:var(--glw);color:var(--gold);border-color:rgba(212,160,23,.2);animation:goldGlow 3s ease infinite}
+.nv-ic{font-size:16px;line-height:1}
+.nv-lb{font-size:6px;font-family:var(--fn);letter-spacing:.06em;margin-top:2px;text-transform:uppercase}
+.main{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:11px}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 13px;border-radius:var(--r2);font-family:var(--fb);font-size:12px;font-weight:500;cursor:pointer;transition:all .14s;border:1px solid transparent;outline:none;white-space:nowrap;-webkit-tap-highlight-color:transparent;user-select:none}
+.btn:active{transform:scale(.95)}.btn:disabled{opacity:.33;pointer-events:none}
+.bt-gold{background:var(--gold);color:#050200;font-weight:700;border-color:var(--gold)}.bt-gold:hover{background:var(--gold2)}
+.bt-gh{background:transparent;color:var(--tx);border-color:var(--bd2)}.bt-gh:hover{background:var(--s3);border-color:var(--gold);color:var(--gold)}
+.bt-grn{background:rgba(24,196,99,.08);color:var(--grn);border-color:rgba(24,196,99,.25)}.bt-grn:hover{background:rgba(24,196,99,.16)}
+.bt-red{background:rgba(224,48,48,.08);color:var(--red);border-color:rgba(224,48,48,.25)}
+.bt-pur{background:rgba(155,109,255,.08);color:var(--pur);border-color:rgba(155,109,255,.25)}.bt-pur:hover{background:rgba(155,109,255,.16)}
+.bt-cya{background:rgba(23,196,196,.08);color:var(--cya);border-color:rgba(23,196,196,.25)}.bt-cya:hover{background:rgba(23,196,196,.16)}
+.bt-sm{padding:4px 10px;font-size:11px}.bt-xs{padding:3px 8px;font-size:10px;font-family:var(--fn)}.bt-ic{padding:7px 9px}
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r3);padding:14px;position:relative;overflow:hidden}
+.ch{font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:.16em;color:var(--tx3);text-transform:uppercase;display:flex;align-items:center;gap:7px;margin-bottom:13px;flex-wrap:wrap}
+/* Signal card */
+.sc{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r3);padding:14px;animation:signalIn .28s ease;position:relative;overflow:hidden}
+.sc.buy{border-top:2px solid var(--grn)}.sc.sell{border-top:2px solid var(--red)}.sc.wait{border-top:2px solid var(--tx3)}
+.sc-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(212,160,23,.4),transparent);animation:scan 2.8s ease-in-out infinite;pointer-events:none}
+.sb{display:inline-flex;align-items:center;gap:4px;padding:3px 11px;border-radius:3px;font-family:var(--fn);font-size:11px;font-weight:700;letter-spacing:.1em}
+.sb-buy{background:rgba(24,196,99,.1);color:var(--grn);border:1px solid rgba(24,196,99,.28)}
+.sb-sell{background:rgba(224,48,48,.1);color:var(--red);border:1px solid rgba(224,48,48,.28)}
+.sb-wait{background:rgba(51,79,102,.1);color:var(--tx2);border:1px solid var(--bd)}
+/* Tags */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:8.5px;font-family:var(--fn);font-weight:700;letter-spacing:.07em;border:1px solid}
+.tg{background:rgba(212,160,23,.07);color:var(--gold);border-color:rgba(212,160,23,.22)}
+.tgr{background:rgba(24,196,99,.07);color:var(--grn);border-color:rgba(24,196,99,.22)}
+.tr{background:rgba(224,48,48,.07);color:var(--red);border-color:rgba(224,48,48,.22)}
+.tb{background:rgba(58,158,221,.07);color:var(--blu);border-color:rgba(58,158,221,.22)}
+.tp{background:rgba(155,109,255,.07);color:var(--pur);border-color:rgba(155,109,255,.22)}
+.tc{background:rgba(23,196,196,.07);color:var(--cya);border-color:rgba(23,196,196,.22)}
+/* Grids */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+@media(max-width:620px){.g3{grid-template-columns:1fr 1fr}.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.g2,.g3,.g4{grid-template-columns:1fr}.main{padding:9px;gap:9px}.hdr{padding:0 10px}}
+/* Stat */
+.stb{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:11px 13px}
+.stv{font-family:var(--fh);font-size:20px;font-weight:800;line-height:1}
+.stl{font-size:8.5px;color:var(--tx3);font-family:var(--fn);letter-spacing:.09em;margin-top:4px;text-transform:uppercase}
+/* Conf bar */
+.cb{height:3px;background:var(--s3);border-radius:2px;overflow:hidden;margin-top:5px}
+.cbf{height:100%;border-radius:2px;transition:width .6s ease}
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{font-family:var(--fn);font-size:8px;letter-spacing:.1em;color:var(--tx3);text-transform:uppercase;padding:5px 7px;text-align:left;border-bottom:1px solid var(--bd)}
+.tbl td{padding:6px 7px;border-bottom:1px solid rgba(25,42,62,.6)}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:var(--s2)}
+/* Input */
+.inp{width:100%;padding:10px 12px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);color:var(--tx);font-family:var(--fb);font-size:13px;transition:border-color .14s;outline:none;-webkit-appearance:none}
+.inp:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--glw)}.inp::placeholder{color:var(--tx3)}
+.lbl{font-size:9px;color:var(--tx3);margin-bottom:4px;font-family:var(--fn);letter-spacing:.11em;text-transform:uppercase;display:block}
+/* Toggle */
+.tog{width:34px;height:18px;border-radius:9px;background:var(--s3);border:1px solid var(--bd2);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--gold)}.tog-h{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tog.on .tog-h{transform:translateX(16px)}
+/* Loader */
+.ldr{width:12px;height:12px;border:1.5px solid var(--bd2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
+/* Info */
+.ibox{background:var(--s2);border:1px solid var(--bd);border-left:3px solid var(--gold);border-radius:var(--r2);padding:12px 14px;font-size:12px;line-height:1.75;color:var(--tx2)}
+.ibox strong{color:var(--gold)}
+/* Range */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:2px;background:var(--bd2);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--s1)}
+/* DVd */
+.dvd{height:1px;background:var(--bd);margin:10px 0}
+/* Pbar */
+.pbar{height:5px;background:var(--s3);border-radius:3px;overflow:hidden}
+.pbf{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* ── INTRO / LANDING ── */
+.intro{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.intro-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(212,160,23,.08) 0%,transparent 70%);pointer-events:none}
+.intro-logo{font-family:var(--fh);font-size:clamp(36px,8vw,72px);font-weight:900;color:var(--gold);letter-spacing:.02em;text-align:center;animation:introIn .6s ease forwards}
+.intro-tagline{font-family:var(--fn);font-size:clamp(9px,2vw,12px);color:var(--tx3);letter-spacing:.2em;text-align:center;margin-top:6px;animation:introIn .6s .1s ease both}
+.intro-desc{font-family:var(--fb);font-size:clamp(13px,2.5vw,16px);color:var(--tx2);text-align:center;max-width:480px;line-height:1.8;margin:28px 0;animation:introIn .6s .2s ease both}
+.intro-plans{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:560px;margin-bottom:28px;animation:introIn .6s .3s ease both}
+@media(max-width:500px){.intro-plans{grid-template-columns:repeat(2,1fr)}}
+.intro-plan{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:12px 10px;text-align:center}
+.intro-plan.hot{border-color:rgba(212,160,23,.4);background:rgba(212,160,23,.04)}
+.intro-plan-n{font-family:var(--fn);font-size:8px;color:var(--tx3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.intro-plan-p{font-family:var(--fh);font-size:20px;font-weight:900;color:var(--gold)}
+.intro-plan-f{font-size:9px;color:var(--tx3);margin-top:4px;line-height:1.6}
+.intro-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;animation:introIn .6s .4s ease both}
+.intro-features{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:500px;margin-top:20px;animation:introIn .6s .5s ease both}
+
+/* ── AUTH ── */
+.auth-overlay{position:fixed;inset:0;background:rgba(5,10,15,.97);display:flex;align-items:center;justify-content:center;z-index:300;padding:16px;backdrop-filter:blur(8px)}
+.auth-box{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r3);padding:28px;width:100%;max-width:400px;animation:introIn .25s ease}
+.auth-logo{font-family:var(--fh);font-size:24px;font-weight:900;color:var(--gold);text-align:center}
+.auth-sub{font-size:9px;font-family:var(--fn);color:var(--tx3);letter-spacing:.18em;text-align:center;margin-bottom:22px;margin-top:4px}
+.auth-tabs{display:flex;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:3px;margin-bottom:20px}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:7px;cursor:pointer;font-size:12.5px;font-weight:600;transition:all .14s;color:var(--tx3);-webkit-tap-highlight-color:transparent}
+.auth-tab.on{background:var(--gold);color:#050200;font-weight:700}
+.pw-wrap{position:relative}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--tx3);font-size:16px;user-select:none;-webkit-tap-highlight-color:transparent}
+.pw-eye:hover{color:var(--gold)}
+
+/* ── UPGRADE MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(5,10,15,.94);display:flex;align-items:center;justify-content:center;z-index:400;padding:16px;backdrop-filter:blur(6px)}
+.modal{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r3);padding:24px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;animation:introIn .22s ease}
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:480px){.tier-grid{grid-template-columns:1fr 1fr}}
+.tier-card{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:14px;cursor:pointer;transition:all .15s;position:relative}
+.tier-card:hover,.tier-card:active{border-color:var(--gold);background:rgba(212,160,23,.04);transform:translateY(-2px)}
+.tier-card.pop{border-color:rgba(212,160,23,.35)}
+.tier-badge{position:absolute;top:-8px;right:10px;background:var(--gold);color:#050200;font-size:7.5px;font-family:var(--fn);font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.1em}
+.tier-name{font-family:var(--fn);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.tier-price{font-family:var(--fh);font-size:22px;font-weight:900;line-height:1;color:var(--gold)}
+.tier-list{list-style:none;font-size:10px;color:var(--tx2);line-height:2;margin-top:9px}
+.tier-list li{padding-left:14px;position:relative}
+.tier-list li::before{content:'✓';position:absolute;left:0;color:var(--grn);font-size:8.5px}
+.tier-list li.no{color:var(--tx3)}.tier-list li.no::before{content:'✗';color:var(--tx3)}
+
+/* ── SHARE BANNER ── */
+.share-bar{background:linear-gradient(135deg,var(--s2),rgba(212,160,23,.05));border:1px solid rgba(212,160,23,.2);border-radius:var(--r3);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* ── Chat ── */
+.chat-msg{padding:10px 13px;border-radius:var(--r2);font-size:12px;line-height:1.75;max-width:90%;animation:fadeUp .2s ease}
+.cm-u{background:var(--s3);border:1px solid var(--bd2);align-self:flex-end;border-radius:var(--r2) var(--r2) 4px var(--r2)}
+.cm-ai{background:var(--s2);border:1px solid var(--bd);align-self:flex-start;color:var(--tx2);border-radius:var(--r2) var(--r2) var(--r2) 4px}
+.cm-who{font-size:8px;font-family:var(--fn);color:var(--tx3);margin-bottom:3px;letter-spacing:.07em;text-transform:uppercase}
+
+/* ── KEY ROW ── */
+.key-row{padding:11px 0;border-bottom:1px solid rgba(25,42,62,.5)}
+.key-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react,env">
+const {useState,useEffect,useRef,useCallback,Fragment}=React;
+
+/* ── API ─────────────────────────────────────────────────────────────────── */
+const api=async(p,o={})=>{
+  const token=localStorage.getItem('ds_token')||'';
+  const headers={'Content-Type':'application/json'};
+  if(token)headers['Authorization']='Bearer '+token;
+  if(o.headers)Object.assign(headers,o.headers);
+  try{
+    const r=await fetch(p,Object.assign({},o,{headers:headers}));
+    return await r.json();
+  }catch(e){return {error:''+e};}
+};
+const post=(p,b)=>api(p,{method:'POST',body:JSON.stringify(b)});
+const del=(p)=>api(p,{method:'DELETE'});
+
+const gc=c=>c>=72?'var(--grn)':c>=52?'var(--gold)':'var(--red)';
+const Ldr=({s=12})=>React.createElement('span',{className:'ldr',style:{width:s,height:s}});
+const Tog=({on,cb})=>React.createElement('div',{className:'tog'+(on?' on':''),onClick:()=>cb(!on)},React.createElement('div',{className:'tog-h'}));
+
+const TIER_CLR={free:'var(--tx3)',starter:'var(--blu)',pro:'var(--gold)',elite:'var(--pur)'};
+
+/* ── INTRO SCREEN ────────────────────────────────────────────────────────── */
+function IntroScreen({onEnter}){
+  const features=['⚡ Built-in AI','🌐 Live Prices','📰 Live News','🔮 Polymarket','💬 AI Chat','🔗 MT5 Integration','📱 Mobile App','🌍 Cloud Ready'];
+  return(
+    <div className="intro">
+      <div className="intro-glow"/>
+      <div className="intro-logo">⚡ DARKSTARE</div>
+      <div className="intro-tagline">AI TRADING BRAIN · BUSINESS EDITION v4.0</div>
+      <div className="intro-desc">
+        Dual-AI forex &amp; gold signal platform. Built-in AI works <strong style={{color:'var(--gold)'}}>instantly — no API keys needed</strong>. Upgrade to unlock Claude + GPT-4o, live prices, news, and MT5 integration.
+      </div>
+      <div className="intro-plans">
+        {[['FREE','$0','3 signals/day'],['STARTER','$5/mo','20/day + MT5'],['PRO','$15/mo','100/day + Claude'],['ELITE','$30/mo','Unlimited + All AI']].map(([n,p,f],i)=>(
+          <div key={n} className={'intro-plan'+(i===2?' hot':'')}>
+            <div className="intro-plan-n">{n}</div>
+            <div className="intro-plan-p">{p}</div>
+            <div className="intro-plan-f">{f}</div>
+          </div>
+        ))}
+      </div>
+      <div className="intro-btns">
+        <button className="btn bt-gold" style={{fontSize:14,padding:'11px 28px'}} onClick={()=>onEnter('register')}>→ Get Started Free</button>
+        <button className="btn bt-gh" style={{fontSize:14,padding:'11px 28px'}} onClick={()=>onEnter('login')}>Sign In</button>
+      </div>
+      <div className="intro-features">
+        {features.map(f=><span key={f} className="tag tc" style={{fontSize:9.5,padding:'3px 9px'}}>{f}</span>)}
+      </div>
+    </div>
+  );
+}
+
+/* ── AUTH SCREEN ─────────────────────────────────────────────────────────── */
+function AuthScreen({onLogin,startMode}){
+  const [mode,setMode]=useState(startMode||'login');
+  const [form,setForm]=useState({name:'',email:'',password:''});
+  const [showPw,setShowPw]=useState(false);
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState('');
+
+  const submit=async()=>{
+    setErr('');
+    if(!form.email.trim()||!form.password.trim()){setErr('Please fill in all fields');return;}
+    setLoading(true);
+    const r=await post(mode==='login'?'/api/auth/login':'/api/auth/register',form);
+    setLoading(false);
+    if(r.error){setErr(r.error);return;}
+    if(r.token){localStorage.setItem('ds_token',r.token);onLogin(r.user);}
+  };
+
+  return(
+    <div className="auth-overlay">
+      <div className="auth-box">
+        <div className="auth-logo">⚡ DARKSTARE</div>
+        <div className="auth-sub">AI TRADING BRAIN</div>
+        <div className="auth-tabs">
+          <div className={'auth-tab'+(mode==='login'?' on':'')} onClick={()=>{setMode('login');setErr('');}}>Sign In</div>
+          <div className={'auth-tab'+(mode==='register'?' on':'')} onClick={()=>{setMode('register');setErr('');}}>Create Account</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:11}}>
+          {mode==='register'&&(
+            <div>
+              <label className="lbl">Full Name</label>
+              <input className="inp" placeholder="Your name" value={form.name} onChange={e=>setForm(f=>Object.assign({},f,{name:e.target.value}))}/>
+            </div>
+          )}
+          <div>
+            <label className="lbl">Email Address</label>
+            <input className="inp" type="email" placeholder="you@email.com" value={form.email} onChange={e=>setForm(f=>Object.assign({},f,{email:e.target.value}))} onKeyDown={e=>{if(e.key==='Enter')submit();}}/>
+          </div>
+          <div>
+            <label className="lbl">Password</label>
+            <div className="pw-wrap">
+              <input className="inp" style={{paddingRight:40}} type={showPw?'text':'password'} placeholder="••••••••" value={form.password} onChange={e=>setForm(f=>Object.assign({},f,{password:e.target.value}))} onKeyDown={e=>{if(e.key==='Enter')submit();}}/>
+              <span className="pw-eye" onClick={()=>setShowPw(s=>!s)} title={showPw?'Hide password':'Show password'}>{showPw?'🙈':'👁'}</span>
+            </div>
+          </div>
+          {err&&<div style={{color:'var(--red)',fontSize:11.5,padding:'8px 11px',background:'rgba(224,48,48,.07)',border:'1px solid rgba(224,48,48,.2)',borderRadius:'var(--r)',fontFamily:'var(--fn)'}}>{err}</div>}
+          <button className="btn bt-gold" style={{width:'100%',justifyContent:'center',marginTop:4,fontSize:13,padding:'11px'}} onClick={submit} disabled={loading}>
+            {loading?React.createElement(Fragment,null,React.createElement(Ldr,{s:14}),' Please wait...'):(mode==='login'?'→ Sign In':'→ Create Free Account')}
+          </button>
+          <div style={{textAlign:'center',fontSize:10.5,color:'var(--tx3)'}}>
+            {mode==='login'?React.createElement(Fragment,null,'No account? ',React.createElement('span',{style:{color:'var(--gold)',cursor:'pointer'},onClick:()=>setMode('register')},'Create one free'))
+              :React.createElement(Fragment,null,'Already registered? ',React.createElement('span',{style:{color:'var(--gold)',cursor:'pointer'},onClick:()=>setMode('login')},'Sign in'))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── UPGRADE MODAL ───────────────────────────────────────────────────────── */
+function UpgradeModal({onClose}){
+  const [code,setCode]=useState('');
+  const [loading,setLoading]=useState(false);
+  const [msg,setMsg]=useState('');
+  const [err,setErr]=useState('');
+
+  const upgrade=async(tier)=>{
+    setLoading(true);setErr('');setMsg('');
+    const r=await post('/api/subscribe',{tier:tier,payment_code:code});
+    setLoading(false);
+    if(r.checkout_url){window.open(r.checkout_url,'_blank');return;}
+    if(r.success){setMsg('✓ '+r.message+' — refresh to see your new plan.');return;}
+    setErr(r.error||r.info||'Contact support');
+    if(r.demo)setErr(r.demo);
+  };
+
+  const plans=[
+    {id:'starter',name:'STARTER',price:'$5',per:'/mo',color:'58,158,221',feats:['20 analyses/day','5 pairs','MT5 signal writer','Built-in AI engine'],no:['Claude + GPT-4o']},
+    {id:'pro',name:'PRO',price:'$15',per:'/mo',color:'212,160,23',pop:true,feats:['100 analyses/day','10 pairs','Claude + GPT-4o','AI Chat assistant','MT5 integration'],no:[]},
+    {id:'elite',name:'ELITE',price:'$30',per:'/mo',color:'155,109,255',feats:['Unlimited analyses','All pairs','All AI models','Priority speed','Full admin access'],no:[]},
+  ];
+
+  return(
+    <div className="modal-bg" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="modal">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}}>
+          <div style={{fontFamily:'var(--fh)',fontSize:17,fontWeight:800,color:'var(--gold)'}}>⬆ Upgrade Plan</div>
+          <button className="btn bt-gh bt-sm" onClick={onClose}>✕ Close</button>
+        </div>
+        <div className="tier-grid">
+          {plans.map(p=>(
+            <div key={p.id} className={'tier-card'+(p.pop?' pop':'')} onClick={()=>upgrade(p.id)}>
+              {p.pop&&<div className="tier-badge">POPULAR</div>}
+              <div className="tier-name" style={{color:'rgb('+p.color+')'}}>{p.name}</div>
+              <div style={{display:'flex',alignItems:'baseline',gap:2}}>
+                <div className="tier-price" style={{color:'rgb('+p.color+')'}}>{p.price}</div>
+                <span style={{fontSize:10,color:'var(--tx3)',fontFamily:'var(--fn)'}}>{p.per}</span>
+              </div>
+              <ul className="tier-list">
+                {p.feats.map(f=><li key={f}>{f}</li>)}
+                {p.no.map(f=><li key={f} className="no">{f}</li>)}
+              </ul>
+              <button className="btn bt-sm" style={{width:'100%',marginTop:10,justifyContent:'center',background:'rgba('+p.color+',.1)',color:'rgb('+p.color+')',borderColor:'rgba('+p.color+',.3)'}} disabled={loading}>{loading?React.createElement(Ldr):'Select →'}</button>
+            </div>
+          ))}
+        </div>
+        <div className="dvd"/>
+        <div>
+          <label className="lbl">Promo / Payment Code</label>
+          <div style={{display:'flex',gap:7}}>
+            <input className="inp" placeholder="Try: DEMO-PRO" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} style={{flex:1}}/>
+            <button className="btn bt-gold bt-sm" onClick={()=>upgrade('pro')} disabled={loading||!code.trim()}>{loading?React.createElement(Ldr):'Apply'}</button>
+          </div>
+          <div style={{fontSize:9,color:'var(--tx3)',fontFamily:'var(--fn)',marginTop:5}}>Test codes: DEMO-STARTER · DEMO-PRO · DEMO-ELITE · DEMO-FREE</div>
+        </div>
+        {msg&&<div style={{marginTop:11,color:'var(--grn)',fontSize:11.5,padding:'9px 13px',background:'rgba(24,196,99,.07)',border:'1px solid rgba(24,196,99,.22)',borderRadius:'var(--r)'}}>{msg}</div>}
+        {err&&<div style={{marginTop:11,color:'var(--red)',fontSize:11.5,padding:'9px 13px',background:'rgba(224,48,48,.07)',border:'1px solid rgba(224,48,48,.22)',borderRadius:'var(--r)',whiteSpace:'pre-wrap'}}>{err}</div>}
+        <div style={{marginTop:14,fontSize:9.5,color:'var(--tx3)',fontFamily:'var(--fn)',lineHeight:1.7}}>Payments via Stripe. Cancel anytime. All plans include built-in AI engine (no keys needed).</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── SIGNAL CARD ─────────────────────────────────────────────────────────── */
+function SigCard({sig,aiLabel,aiColor,onFb,onMT5}){
+  const [expand,setExpand]=useState(false);
+  if(!sig)return(
+    <div className="sc wait">
+      <span className="tag tg">{aiLabel}</span>
+      <div style={{color:'var(--tx3)',fontFamily:'var(--fn)',fontSize:11,textAlign:'center',padding:'26px 0',marginTop:10}}>— Waiting for analysis —</div>
+    </div>
+  );
+  if(sig.error)return(
+    <div className="sc wait">
+      <div style={{display:'flex',gap:6,marginBottom:10}}><span className="tag tg">{aiLabel}</span><span className="tag tr">ERROR</span></div>
+      <div style={{color:'var(--red)',fontSize:11,fontFamily:'var(--fn)',lineHeight:1.7}}>{sig.error}</div>
+    </div>
+  );
+  const buy=sig.signal==='BUY',sell=sig.signal==='SELL';
+  const cc=gc(sig.confidence||0);
+  return(
+    <div className={'sc '+(buy?'buy':sell?'sell':'wait')}>
+      <div className="sc-scan"/>
+      <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:11,flexWrap:'wrap'}}>
+        <span className="tag" style={{background:'rgba('+aiColor+',.08)',color:'rgb('+aiColor+')',borderColor:'rgba('+aiColor+',.25)'}}>{aiLabel}</span>
+        <span className={'sb '+(buy?'sb-buy':sell?'sb-sell':'sb-wait')}>{buy?'▲':sell?'▼':'◆'} {sig.signal||'WAIT'}</span>
+        {sig.dataSource==='BUILT-IN ENGINE'&&<span className="tag tc">⚡ LOCAL</span>}
+        {sig.dataSource==='LIVE'&&<span className="tag tgr">🌐 LIVE</span>}
+        <span style={{fontFamily:'var(--fn)',fontWeight:700,fontSize:12,color:cc,marginLeft:'auto'}}>{sig.confidence||0}%</span>
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:5}}>
+        <span style={{fontFamily:'var(--fh)',fontSize:18,fontWeight:800,color:'var(--tx)'}}>{sig.pair||'—'}</span>
+        <span style={{fontFamily:'var(--fn)',fontSize:8.5,color:'var(--tx3)'}}>{sig.timeframe||''} · {sig.riskReward||''}</span>
+      </div>
+      <div className="cb"><div className="cbf" style={{width:(sig.confidence||0)+'%',background:cc}}/></div>
+      <div className="g3" style={{marginTop:10,gap:5}}>
+        {[{l:'ENTRY',v:sig.entry,c:'var(--tx)'},{l:'STOP',v:sig.stopLoss,c:'var(--red)'},{l:'TARGET',v:sig.takeProfit,c:'var(--grn)'}].map(x=>(
+          <div key={x.l} style={{background:'var(--bg)',borderRadius:'var(--r)',padding:'6px 8px',border:'1px solid var(--bd)'}}>
+            <div style={{fontSize:7,fontFamily:'var(--fn)',color:'var(--tx3)',letterSpacing:'.1em',marginBottom:2}}>{x.l}</div>
+            <div style={{fontFamily:'var(--fn)',fontSize:9.5,fontWeight:700,color:x.c}}>{x.v||'—'}</div>
+          </div>
+        ))}
+      </div>
+      {sig.sentiment&&<div style={{marginTop:8,display:'flex',gap:4,flexWrap:'wrap'}}>
+        <span className={'tag '+(sig.sentiment==='BULLISH'?'tgr':sig.sentiment==='BEARISH'?'tr':'tb')}>{sig.sentiment}</span>
+        {sig.riskLevel&&<span className={'tag '+(sig.riskLevel==='LOW'?'tgr':sig.riskLevel==='HIGH'?'tr':'tg')}>{sig.riskLevel} RISK</span>}
+      </div>}
+      {sig.keyFactors&&sig.keyFactors.length>0&&(
+        <div style={{marginTop:9,borderTop:'1px solid var(--s3)',paddingTop:9}}>
+          {sig.keyFactors.slice(0,3).map((f,i)=>(
+            <div key={i} style={{display:'flex',gap:6,fontSize:10.5,color:'var(--tx2)',lineHeight:1.6,marginBottom:3}}>
+              <span style={{color:'var(--gold)',flexShrink:0}}>▸</span><span>{f}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {sig.reasoning&&(
+        <div>
+          <button className="btn bt-gh bt-xs" style={{marginTop:9}} onClick={()=>setExpand(x=>!x)}>{expand?'▲ Hide':'▼ Analysis'}</button>
+          {expand&&<div style={{marginTop:8,background:'var(--bg)',border:'1px solid var(--bd)',borderRadius:'var(--r)',padding:'9px 11px',fontSize:10.5,color:'var(--tx2)',lineHeight:1.8,whiteSpace:'pre-wrap',maxHeight:150,overflowY:'auto'}}>{sig.reasoning}</div>}
+        </div>
+      )}
+      <div style={{display:'flex',gap:5,marginTop:10,paddingTop:10,borderTop:'1px solid var(--s3)',flexWrap:'wrap'}}>
+        <span style={{fontSize:9,color:'var(--tx3)',fontFamily:'var(--fn)',flex:1,alignSelf:'center'}}>Rate this signal:</span>
+        <button className="btn bt-grn bt-xs" onClick={()=>onFb&&onFb('good')}>✓ Good</button>
+        <button className="btn bt-red bt-xs" onClick={()=>onFb&&onFb('bad')}>✗ Bad</button>
+        {onMT5&&<button className="btn bt-gh bt-xs" onClick={onMT5}>→ MT5</button>}
+      </div>
+    </div>
+  );
+}
+
+/* ── SETTINGS ────────────────────────────────────────────────────────────── */
+function SettingsTab({user,svSt,onUpgrade,appUrl}){
+  const [vals,setVals]=useState({});
+  const [showPw,setShowPw]=useState({});
+  const [kst,setKst]=useState({});
+  const [savedKeys,setSavedKeys]=useState({});
+  const [hasKeys,setHasKeys]=useState({});
+  const [saving,setSaving]=useState(false);
+  const [saved,setSaved]=useState(false);
+  const [copied,setCopied]=useState(false);
+
+  const KFIELDS=[
+    {id:'anthropic',l:'Anthropic API Key (Claude)',ph:'sk-ant-...',h:'console.anthropic.com/keys'},
+    {id:'openai',l:'OpenAI API Key (GPT-4o)',ph:'sk-proj-...',h:'platform.openai.com/api-keys'},
+    {id:'newsapi',l:'NewsAPI Key',ph:'xxxxxxxx',h:'newsapi.org/register — FREE'},
+    {id:'av',l:'Alpha Vantage Key',ph:'XXXXXXXX',h:'alphavantage.co/support — FREE'},
+    {id:'twitter',l:'X/Twitter Bearer Token',ph:'AAAA...',h:'developer.twitter.com — optional'},
+    {id:'stripe',l:'Stripe Secret Key',ph:'sk_live_...',h:'dashboard.stripe.com/apikeys — payments'},
+    {id:'mt5_path',l:'MT5 Signal File Path',ph:'C:\\...\\MQL5\\Files\\darkstare_signal.txt',h:'Optional — MetaTrader 5 path'},
+  ];
+
+  useEffect(()=>{
+    api('/api/keys/load').then(r=>{
+      if(r.saved_keys)setSavedKeys(r.saved_keys);
+      if(r.has_keys)setHasKeys(r.has_keys);
+    });
+  },[]);
+
+  const save=async()=>{
+    setSaving(true);
+    const payload={};
+    KFIELDS.forEach(f=>{if(vals[f.id]&&vals[f.id].trim())payload[f.id]=vals[f.id].trim();});
+    const r=await post('/api/keys',payload);
+    setSaving(false);
+    if(!r.error){setSaved(true);setTimeout(()=>setSaved(false),2500);api('/api/keys/load').then(r=>{if(r.saved_keys)setSavedKeys(r.saved_keys);if(r.has_keys)setHasKeys(r.has_keys);});}
+  };
+
+  const test=async(id)=>{
+    setKst(s=>Object.assign({},s,{[id]:'testing'}));
+    const r=await post('/api/keys/test',{type:id});
+    setKst(s=>Object.assign({},s,{[id]:r.status==='ok'?'ok:'+r.message:'err:'+r.message}));
+  };
+
+  const kSt=id=>{const s=kst[id]||'';if(!s)return 'unset';if(s==='testing')return 'testing';if(s.startsWith('ok:'))return 'ok';if(s.startsWith('err:'))return 'err';return 'unset';};
+  const kMsg=id=>{const s=kst[id]||'';return s.startsWith('ok:')?s.slice(3):s.startsWith('err:')?s.slice(4):'';};
+  const stC={unset:'var(--tx3)',testing:'var(--gold)',ok:'var(--grn)',err:'var(--red)'};
+
+  const copyLink=()=>{
+    navigator.clipboard&&navigator.clipboard.writeText(appUrl).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});
+  };
+
+  const tier=user&&user.tier||'free';
+  const tierC=TIER_CLR[tier]||'var(--tx3)';
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:11}}>
+      {/* Share / install banner */}
+      <div className="share-bar">
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{fontFamily:'var(--fh)',fontSize:13,fontWeight:700,color:'var(--gold)',marginBottom:4}}>📲 Share & Install</div>
+          <div style={{fontSize:11,color:'var(--tx2)',fontFamily:'var(--fn)',wordBreak:'break-all'}}>{appUrl}</div>
+        </div>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          <button className="btn bt-gold bt-sm" onClick={copyLink}>{copied?'✓ Copied!':'📋 Copy Link'}</button>
+          <button className="btn bt-cya bt-sm" onClick={()=>{const a=document.createElement('a');a.href=appUrl;a.click();}}>🔗 Open</button>
+        </div>
+        <div style={{width:'100%',fontSize:10,color:'var(--tx3)',fontFamily:'var(--fn)',lineHeight:1.7}}>
+          Share this link with users. <strong style={{color:'var(--tx)'}}>iPhone:</strong> Share → Add to Home Screen &nbsp;|&nbsp; <strong style={{color:'var(--tx)'}}>Android:</strong> Menu → Add to Home Screen
+        </div>
+      </div>
+
+      {/* Account */}
+      <div className="card">
+        <div className="ch">👤 Account</div>
+        <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+          <div>
+            <div style={{fontFamily:'var(--fh)',fontSize:14,fontWeight:700}}>{user&&user.name}</div>
+            <div style={{fontSize:10.5,color:'var(--tx3)',fontFamily:'var(--fn)',marginTop:2}}>{user&&user.email}</div>
+          </div>
+          <div style={{marginLeft:'auto',textAlign:'right'}}>
+            <div style={{fontFamily:'var(--fn)',fontWeight:700,fontSize:10,color:tierC,letterSpacing:'.1em'}}>{tier.toUpperCase()} PLAN</div>
+            {tier!=='elite'&&<button className="btn bt-gold bt-sm" style={{marginTop:5}} onClick={onUpgrade}>⬆ Upgrade</button>}
+          </div>
+        </div>
+        {svSt&&<div style={{marginTop:11,display:'grid',gridTemplateColumns:'1fr 1fr',gap:7}}>
+          {[['Engine','⚡ Built-in AI Ready'],['Version',svSt.version||'4.0'],['App URL',svSt.app_url||'localhost:8000'],['Status','🟢 Online']].map(([l,v])=>(
+            <div key={l} style={{background:'var(--s2)',borderRadius:'var(--r)',padding:'7px 9px',border:'1px solid var(--bd)'}}>
+              <div style={{fontSize:7.5,color:'var(--tx3)',fontFamily:'var(--fn)',marginBottom:2,textTransform:'uppercase',letterSpacing:'.1em'}}>{l}</div>
+              <div style={{fontFamily:'var(--fn)',fontSize:9.5,color:'var(--tx)',wordBreak:'break-all'}}>{v}</div>
+            </div>
+          ))}
+        </div>}
+      </div>
+
+      {/* API Keys */}
+      <div className="card">
+        <div className="ch">🔑 API Keys <span className="tag tc">Saved Permanently</span></div>
+        <div className="ibox" style={{marginBottom:13}}>
+          <strong>Keys are saved permanently</strong> and never auto-deleted. Leave a field blank to keep the existing saved key. Only fill in a field to update it.
+        </div>
+        {KFIELDS.map(f=>(
+          <div key={f.id} className="key-row">
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+              <label className="lbl" style={{marginBottom:0}}>{f.l}{hasKeys[f.id]&&<span style={{color:'var(--grn)',marginLeft:6}}>✓ saved</span>}</label>
+              {f.id!=='mt5_path'&&<span style={{fontSize:8.5,fontFamily:'var(--fn)',color:stC[kSt(f.id)]}}>{kSt(f.id)==='testing'?'⏳ Testing...':kSt(f.id)==='ok'?'✓ '+kMsg(f.id):kSt(f.id)==='err'?'✗ '+kMsg(f.id):hasKeys[f.id]?'● Saved':'○ Not set'}</span>}
+            </div>
+            <div style={{display:'flex',gap:6}}>
+              <div style={{flex:1,position:'relative'}}>
+                <input className="inp" style={{paddingRight:f.id!=='mt5_path'?38:12}} type={showPw[f.id]?'text':'password'} placeholder={hasKeys[f.id]?savedKeys[f.id]||'(saved)':f.ph} value={vals[f.id]||''} onChange={e=>setVals(v=>Object.assign({},v,{[f.id]:e.target.value}))}/>
+                {f.id!=='mt5_path'&&<span className="pw-eye" style={{fontSize:14}} onClick={()=>setShowPw(s=>Object.assign({},s,{[f.id]:!s[f.id]}))}>{showPw[f.id]?'🙈':'👁'}</span>}
+              </div>
+              {f.id!=='mt5_path'&&<button className="btn bt-gh bt-sm" onClick={()=>test(f.id)} disabled={kst[f.id]==='testing'||(!vals[f.id]&&!hasKeys[f.id])}>{kst[f.id]==='testing'?React.createElement(Ldr):'TEST'}</button>}
+            </div>
+            <div style={{fontSize:8.5,color:'var(--tx3)',fontFamily:'var(--fn)',marginTop:4}}>{f.h}</div>
+          </div>
+        ))}
+        <button className="btn bt-gold" style={{marginTop:14,width:'100%',justifyContent:'center',fontSize:13,padding:'11px'}} onClick={save} disabled={saving}>
+          {saving?React.createElement(Fragment,null,React.createElement(Ldr,{s:13}),' Saving...'):(saved?'✓ Keys Saved Permanently!':'💾 Save All Keys')}
+        </button>
+      </div>
+
+      {/* Mobile */}
+      <div className="card" style={{borderLeft:'3px solid var(--cya)'}}>
+        <div className="ch">📱 Install as Mobile App</div>
+        <div style={{fontSize:11.5,color:'var(--tx2)',lineHeight:2.1}}>
+          <div><strong style={{color:'var(--tx)'}}>iPhone/iPad:</strong> Open the app URL → Safari Share button → "Add to Home Screen" → Add</div>
+          <div><strong style={{color:'var(--tx)'}}>Android:</strong> Open the app URL → Chrome menu ⋮ → "Add to Home Screen"</div>
+          <div style={{marginTop:6,fontSize:10,color:'var(--tx3)'}}>Opens full-screen like a native app with no browser bars. Works on any device on the same network or via cloud URL.</div>
+        </div>
+      </div>
+
+      {/* Deploy */}
+      <div className="card" style={{borderLeft:'3px solid var(--pur)'}}>
+        <div className="ch">☁ Cloud Deployment</div>
+        <div style={{fontSize:11.5,color:'var(--tx2)',lineHeight:2.1}}>
+          <div><strong style={{color:'var(--pur)'}}>Render.com (FREE):</strong> Connect GitHub → New Web Service → Deploy</div>
+          <div><strong style={{color:'var(--pur)'}}>Railway.app:</strong> New Project → Deploy from GitHub → Auto-deploy</div>
+          <div><strong style={{color:'var(--pur)'}}>Fly.io:</strong> flyctl launch → flyctl deploy (global edge)</div>
+          <div style={{marginTop:6,fontSize:10,color:'var(--tx3)'}}>See README_DEPLOY.md for full step-by-step guide with screenshots</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── CHAT ────────────────────────────────────────────────────────────────── */
+const QUICK=['Gold outlook now?','Best XAUUSD setup?','Fed impact on USD?','Bitcoin direction?','EURUSD analysis?','Oil market outlook?','How does DarkStare work?','War impact on gold?'];
+
+function ChatTab({liveCtx,user}){
+  const [msgs,setMsgs]=useState([]);
+  const [inp,setInp]=useState('');
+  const [ai,setAi]=useState('darkstare');
+  const [loading,setLoading]=useState(false);
+  const ref=useRef(null);
+  const hasPro=user&&['pro','elite'].includes(user.tier);
+
+  useEffect(()=>{if(ref.current)ref.current.scrollTop=ref.current.scrollHeight;},[msgs]);
+
+  const send=async(q)=>{
+    const txt=(q||inp).trim();
+    if(!txt||loading)return;
+    setInp('');setLoading(true);
+    setMsgs(m=>m.concat([{role:'user',content:txt}]));
+    const hist=msgs.slice(-10).map(m=>({role:m.role,content:m.content}));
+    try{
+      const r=await post('/api/chat',{ai:ai,messages:hist.concat([{role:'user',content:txt}]),live_context:liveCtx||''});
+      if(r.error)setMsgs(m=>m.concat([{role:'assistant',content:r.error,err:true,who:'Error'}]));
+      else setMsgs(m=>m.concat([{role:'assistant',content:r.response,who:ai==='claude'?'◆ Claude':ai==='gpt'?'◎ GPT-4o':'⚡ DarkStare AI'}]));
+    }catch(e){setMsgs(m=>m.concat([{role:'assistant',content:e.message,err:true,who:'Error'}]));}
+    setLoading(false);
+  };
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',height:'calc(100vh - 165px)',gap:9}}>
+      <div style={{display:'flex',gap:5,alignItems:'center',flexWrap:'wrap',flexShrink:0}}>
+        {[['darkstare','⚡ Built-in','cya'],['claude','◆ Claude','gold'],['gpt','◎ GPT-4o','blu']].map(function(item){
+          var v=item[0],lb=item[1],c=item[2];
+          var locked=(v==='claude'||v==='gpt')&&!hasPro;
+          return React.createElement('span',{key:v,className:'tag t'+c,style:{cursor:'pointer',padding:'4px 10px',fontSize:10,opacity:ai===v?1:.5,transition:'all .14s'},onClick:function(){if(!locked)setAi(v);}},lb,locked?' 🔒':'');
+        })}
+        {(ai==='claude'||ai==='gpt')&&!hasPro&&<span style={{fontSize:9,color:'var(--red)',fontFamily:'var(--fn)'}}>Pro required</span>}
+      </div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:5,flexShrink:0}}>
+        {QUICK.map(function(q){return React.createElement('button',{key:q,className:'btn bt-gh bt-xs',onClick:function(){send(q);}},q);})}</div>
+      <div ref={ref} style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:9,minHeight:0}}>
+        {msgs.length===0&&<div style={{textAlign:'center',color:'var(--tx3)',fontFamily:'var(--fn)',fontSize:11,padding:'32px 0'}}>Ask DARKSTARE anything about the markets</div>}
+        {msgs.map(function(m,i){return React.createElement('div',{key:i,className:'chat-msg '+(m.role==='user'?'cm-u':m.err?'tr':'cm-ai')},m.who&&React.createElement('div',{className:'cm-who'},m.who),React.createElement('div',{style:{whiteSpace:'pre-wrap'}},m.content));})}</div>
+      {loading&&<div className="chat-msg cm-ai"><div className="cm-who">AI</div>{React.createElement(Ldr,{s:13})}</div>}
+      <div style={{display:'flex',gap:7,flexShrink:0}}>
+        <input className="inp" placeholder="Ask about markets, pairs, strategy..." value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}} style={{flex:1}}/>
+        <button className="btn bt-gold" onClick={()=>send()} disabled={loading||!inp.trim()}>{loading?React.createElement(Ldr):'→'}</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── MARKETS ─────────────────────────────────────────────────────────────── */
+function MarketsTab({ld,onRefresh,loading}){
+  const prices=(ld&&ld.prices&&ld.prices.prices)||{};
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:11}}>
+      <div className="card">
+        <div className="ch">📊 Live Prices {ld&&ld.prices&&ld.prices.ts&&<span className="tag tc">{ld.prices.ts}</span>}
+          <button className="btn bt-gh bt-sm" style={{marginLeft:'auto'}} onClick={onRefresh} disabled={loading}>{loading?React.createElement(Ldr):'⟳ Refresh'}</button>
+        </div>
+        {Object.keys(prices).length===0?(
+          <div style={{color:'var(--tx3)',fontFamily:'var(--fn)',fontSize:11,textAlign:'center',padding:'24px 0'}}>No price data — add Alpha Vantage key in Settings</div>
+        ):Object.entries(prices).map(function(entry){var p=entry[0],v=entry[1];return(
+          <div key={p} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:'1px solid var(--s3)'}}>
+            <div><div style={{fontFamily:'var(--fn)',fontWeight:700,fontSize:12}}>{p}</div><div style={{fontSize:8.5,color:'var(--tx3)',fontFamily:'var(--fn)',marginTop:1}}>{v.updated&&v.updated.slice(0,16)||''}</div></div>
+            <div style={{textAlign:'right'}}><div style={{fontFamily:'var(--fn)',fontWeight:700,fontSize:13,color:'var(--gold)'}}>{v.price!=null?v.price.toFixed(5):'—'}</div><div style={{fontSize:8.5,color:'var(--tx3)',fontFamily:'var(--fn)'}}>bid {v.bid!=null?v.bid.toFixed(5):'—'} · ask {v.ask!=null?v.ask.toFixed(5):'—'}</div></div>
+          </div>
+        );})}
+      </div>
+      {ld&&ld.polymarket&&<div className="card"><div className="ch">🔮 Polymarket <span className="tag tgr">FREE · NO KEY</span></div><div style={{fontSize:11,color:'var(--tx2)',lineHeight:2.1,fontFamily:'var(--fn)',whiteSpace:'pre-line'}}>{ld.polymarket.data}</div></div>}
+      {ld&&ld.news&&<div className="card"><div className="ch">📰 News {ld.news.ts&&<span className="tag tc">{ld.news.ts}</span>}</div><div style={{fontSize:11.5,color:'var(--tx2)',lineHeight:1.9,whiteSpace:'pre-line'}}>{ld.news.data}</div></div>}
+    </div>
+  );
+}
+
+/* ── HISTORY ─────────────────────────────────────────────────────────────── */
+function HistoryTab({hist,fb,onClear}){
+  var wr=fb&&fb.total>0?Math.round((fb.good||0)/fb.total*100):null;
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:11}}>
+      <div className="g3">
+        {[{l:'Win Rate',v:wr!==null?wr+'%':'—',c:wr>=60?'var(--grn)':wr!==null?'var(--gold)':'var(--tx3)'},{l:'Signals',v:(hist&&hist.length)||0,c:'var(--blu)'},{l:'Rated',v:((fb&&fb.good)||0)+'✓ '+((fb&&fb.bad)||0)+'✗',c:'var(--pur)'}].map(function(s){return React.createElement('div',{key:s.l,className:'stb'},React.createElement('div',{className:'stv',style:{color:s.c,fontSize:18}},s.v),React.createElement('div',{className:'stl'},s.l));})}</div>
+      {wr!==null&&<div className="card" style={{padding:12}}>
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><span style={{fontSize:9,fontFamily:'var(--fn)',color:'var(--tx3)',letterSpacing:'.1em'}}>WIN RATE</span><span style={{fontFamily:'var(--fn)',fontWeight:700,fontSize:12,color:gc(wr)}}>{wr}%</span></div>
+        <div className="pbar"><div className="pbf" style={{width:wr+'%',background:gc(wr)}}/></div>
+        <div style={{fontSize:9.5,color:'var(--tx3)',fontFamily:'var(--fn)',marginTop:5}}>{wr<50?'⚠ Below 50% — AI auto-adjusts to be more conservative':wr>72?'✅ Excellent — keep it up':'📊 Good — stay selective'}</div>
+      </div>}
+      <div className="card">
+        <div className="ch">🕐 Signal History {hist&&hist.length>0&&<button className="btn bt-red bt-xs" style={{marginLeft:'auto'}} onClick={onClear}>Clear All</button>}</div>
+        {!hist||hist.length===0?<div style={{color:'var(--tx3)',fontFamily:'var(--fn)',fontSize:11,textAlign:'center',padding:'24px 0'}}>No signals yet — run an analysis</div>:(
+          <div style={{overflowX:'auto'}}><table className="tbl"><thead><tr><th>Time</th><th>AI</th><th>Pair</th><th>Signal</th><th>Conf</th><th>Entry</th><th>SL</th><th>TP</th></tr></thead>
+            <tbody>{hist.slice(-60).reverse().map(function(h,i){return React.createElement('tr',{key:i},
+              React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:8.5,color:'var(--tx3)'}},h.time),
+              React.createElement('td',null,React.createElement('span',{className:'tag tg',style:{fontSize:7.5}},h.ai==='darkstare'?'⚡':h.ai==='claude'?'◆':'◎')),
+              React.createElement('td',{style:{fontFamily:'var(--fn)',fontWeight:700,fontSize:10.5}},h.pair),
+              React.createElement('td',null,React.createElement('span',{className:'tag '+(h.signal==='BUY'?'tgr':h.signal==='SELL'?'tr':'tb'),style:{fontSize:8.5}},h.signal==='BUY'?'▲':h.signal==='SELL'?'▼':'◆',' ',h.signal)),
+              React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:10.5,color:gc(h.confidence||0)}},h.confidence+'%'),
+              React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:9.5,color:'var(--tx2)'}},h.entry||'—'),
+              React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:9.5,color:'var(--red)'}},h.stopLoss||'—'),
+              React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:9.5,color:'var(--grn)'}},h.takeProfit||'—')
+            );})}</tbody>
+          </table></div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── MT5 ─────────────────────────────────────────────────────────────────── */
+function MT5Tab({ds,cs,gs,user}){
+  const [wr,setWr]=useState(null);
+  const [wrMsg,setWrMsg]=useState('');
+  var hasMT5=user&&['starter','pro','elite'].includes(user.tier);
+  var sigs=[ds&&!ds.error&&{sig:ds,label:'⚡ Built-in',color:'23,196,196'},cs&&!cs.error&&{sig:cs,label:'◆ Claude',color:'212,160,23'},gs&&!gs.error&&{sig:gs,label:'◎ GPT-4o',color:'58,158,221'}].filter(Boolean);
+  var writeSignal=async function(sig){
+    if(!hasMT5){setWr('err');setWrMsg('MT5 requires Starter plan');setTimeout(function(){setWr(null);},3000);return;}
+    setWr('writing');
+    var r=await post('/api/mt5/signal',{signal:sig.signal,pair:sig.pair,entry:sig.entry,stopLoss:sig.stopLoss,takeProfit:sig.takeProfit,confidence:sig.confidence,timeframe:sig.timeframe||'H1'});
+    setWr(r.success?'ok':'err');setWrMsg(r.success?'✓ Written to '+(r.written_to||[]).join(', '):'✗ '+(r.errors||[]).join(', '));
+    setTimeout(function(){setWr(null);setWrMsg('');},4000);
+  };
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:11}}>
+      {!hasMT5&&<div className="ibox"><strong>MT5 integration requires Starter ($5/mo).</strong> Upgrade to send signals directly to MetaTrader 5.</div>}
+      <div className="card">
+        <div className="ch">🔗 Send to MetaTrader 5</div>
+        {sigs.length===0&&<div style={{color:'var(--tx3)',fontFamily:'var(--fn)',fontSize:11,textAlign:'center',padding:'20px 0'}}>Run analysis first to get signals</div>}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:9}}>
+          {sigs.map(function(item){var s=item.sig,lb=item.label,col=item.color;return(
+            <div key={lb} style={{background:'var(--s2)',borderRadius:'var(--r2)',padding:11,border:'1px solid var(--bd)'}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:7}}>
+                <span className="tag" style={{fontSize:8,background:'rgba('+col+',.08)',color:'rgb('+col+')',borderColor:'rgba('+col+',.25)'}}>{lb}</span>
+                <span className={'sb '+(s.signal==='BUY'?'sb-buy':'sb-sell')} style={{fontSize:9,padding:'1px 8px'}}>{s.signal}</span>
+              </div>
+              <div style={{fontFamily:'var(--fn)',fontSize:10.5,color:'var(--tx)',marginBottom:7}}>{s.pair} · {s.confidence}%</div>
+              <button className="btn bt-gold bt-sm" style={{width:'100%',justifyContent:'center'}} onClick={function(){writeSignal(s);}} disabled={!hasMT5}>→ Send to MT5</button>
+            </div>);
+          })}
+        </div>
+        {wr&&<div style={{marginTop:9,padding:'7px 11px',borderRadius:'var(--r)',background:'var(--s2)',border:'1px solid var(--bd)',fontSize:11,fontFamily:'var(--fn)',color:wr==='ok'?'var(--grn)':wr==='err'?'var(--red)':'var(--gold)'}}>
+          {wr==='writing'?React.createElement(Fragment,null,React.createElement(Ldr),' Writing signal...'):wrMsg}
+        </div>}
+      </div>
+      <div className="card">
+        <div className="ch">📋 Setup Guide</div>
+        <div className="ibox">
+          <strong>Step 1:</strong> In MetaTrader 5 → File → Open Data Folder → MQL5 → Experts<br/>
+          <strong>Step 2:</strong> Copy DarkStare_AI_EA.mq5 there → Open MetaEditor → Compile (F7)<br/>
+          <strong>Step 3:</strong> Drag EA onto a chart → Enable AutoTrading<br/>
+          <strong>Step 4:</strong> Paste the MT5 Files path in Settings → Save Keys<br/>
+          EA auto-trades when confidence ≥ 70%
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── APP ─────────────────────────────────────────────────────────────────── */
+const PAIRS_ALL=['XAUUSD','EURUSD','GBPUSD','USDJPY','BTCUSD','ETHUSD','USDCAD','NZDUSD','AUDUSD','XAGUSD'];
+const TABS=[{id:'dash',ic:'⚡',lb:'DASH'},{id:'signals',ic:'🎯',lb:'SIGS'},{id:'chat',ic:'💬',lb:'CHAT'},{id:'markets',ic:'📊',lb:'MKT'},{id:'history',ic:'🕐',lb:'LOG'},{id:'mt5',ic:'🔗',lb:'MT5'},{id:'settings',ic:'⚙',lb:'CFG'}];
+const TK='XAUUSD · EURUSD · GBPUSD · BTCUSD · ETHUSD · USDJPY · XAGUSD · USDCAD · OIL · BNBUSD · SOLUSD · NZDUSD';
+
+function App(){
+  const [screen,setScreen]=useState('intro'); // intro | auth | app
+  const [authMode,setAuthMode]=useState('login');
+  const [user,setUser]=useState(null);
+  const [tab,setTab]=useState('dash');
+  const [ds,setDs]=useState(null);
+  const [cs,setCs]=useState(null);
+  const [gs,setGs]=useState(null);
+  const [hist,setHist]=useState([]);
+  const [running,setRunning]=useState(false);
+  const [mktLoading,setMktLoading]=useState(false);
+  const [auto,setAuto]=useState(false);
+  const [intv,setIntv]=useState(30);
+  const [pairs,setPairs]=useState(['XAUUSD','EURUSD']);
+  const [ld,setLd]=useState(null);
+  const [fb,setFb]=useState({good:0,bad:0,total:0});
+  const [step,setStep]=useState('');
+  const [svSt,setSvSt]=useState(null);
+  const [showUpgrade,setShowUpgrade]=useState(false);
+  const [usageInfo,setUsageInfo]=useState(null);
+  const [appUrl,setAppUrl]=useState('http://localhost:8000');
+  const lock=useRef(false);
+  const timer=useRef(null);
+
+  useEffect(()=>{
+    // Check existing session
+    const token=localStorage.getItem('ds_token');
+    if(token){
+      api('/api/auth/me').then(function(r){
+        if(r.logged_in){setUser(r.user);setUsageInfo(r);setScreen('app');}
+      }).catch(function(){});
+    }
+    api('/api/status').then(function(r){
+      setSvSt(r);
+      const url=r.app_url||window.location.origin||'http://localhost:8000';
+      setAppUrl(url);
+    }).catch(function(){});
+    api('/api/feedback').then(function(r){setFb(r||{good:0,bad:0,total:0});}).catch(function(){});
+    api('/api/history').then(function(d){if(d.history&&d.history.length)setHist(d.history);}).catch(function(){});
+  },[]);
+
+  const handleLogin=useCallback(function(u){
+    setUser(u);setScreen('app');
+    api('/api/auth/me').then(function(r){if(r.logged_in)setUsageInfo(r);});
+    api('/api/feedback').then(function(r){setFb(r||{good:0,bad:0,total:0});}).catch(function(){});
+    api('/api/history').then(function(d){if(d.history&&d.history.length)setHist(d.history);}).catch(function(){});
+  },[]);
+
+  const logout=function(){localStorage.removeItem('ds_token');setUser(null);setScreen('intro');setDs(null);setCs(null);setGs(null);};
+
+  const hasPro=user&&['pro','elite'].includes(user.tier);
+
+  const analyze=useCallback(async function(){
+    if(lock.current)return;
+    lock.current=true;setRunning(true);
+    try{
+      setStep('Fetching live data...');
+      const intel=await api('/api/intel');
+      setLd({news:intel.news,prices:intel.prices,polymarket:intel.polymarket,x:intel.x});
+      setStep('Built-in AI analyzing...');
+      const payload={news:(intel.news&&intel.news.data)||'[no news]',prices:(intel.prices&&intel.prices.data)||'[no prices]',prices_obj:(intel.prices&&intel.prices.prices)||{},polymarket:(intel.polymarket&&intel.polymarket.data)||'[no poly]',x:(intel.x&&intel.x.data)||'[no x]',pairs:pairs,feedback:fb};
+      const dsResult=await post('/api/analyze',Object.assign({},payload,{ai:'darkstare'}));
+      const now=new Date().toLocaleTimeString();
+      setDs(dsResult);
+      const newHist=[];
+      if(!dsResult.error)newHist.push(Object.assign({},dsResult,{ai:'darkstare',time:now}));
+      if(hasPro){
+        setStep('External AI analyzing...');
+        const results=await Promise.allSettled([post('/api/analyze',Object.assign({},payload,{ai:'claude'})),post('/api/analyze',Object.assign({},payload,{ai:'gpt'}))]);
+        var cr=results[0],gr=results[1];
+        if(cr.status==='fulfilled'){const v=cr.value;setCs(v);if(!v.error)newHist.push(Object.assign({},v,{ai:'claude',time:now}));}else setCs({error:'Claude failed'});
+        if(gr.status==='fulfilled'){const v=gr.value;setGs(v);if(!v.error)newHist.push(Object.assign({},v,{ai:'gpt',time:now}));}else setGs({error:'GPT failed'});
+      }
+      if(newHist.length){setHist(function(h){return h.concat(newHist).slice(-500);});post('/api/history/add',{entries:newHist});}
+      api('/api/auth/me').then(function(r){if(r.logged_in)setUsageInfo(r);}).catch(function(){});
+    }catch(e){setDs({error:e.message});}
+    finally{setRunning(false);lock.current=false;setStep('');}
+  },[pairs,fb,hasPro]);
+
+  useEffect(function(){
+    clearInterval(timer.current);
+    if(auto){analyze();timer.current=setInterval(analyze,intv*1000);}
+    return function(){clearInterval(timer.current);};
+  },[auto,intv]);
+
+  const onFb=useCallback(function(sig,t){
+    const upd={good:fb.good+(t==='good'?1:0),bad:fb.bad+(t==='bad'?1:0),total:fb.total+1};
+    setFb(upd);post('/api/feedback',{good:t==='good'?1:0,bad:t==='bad'?1:0,total:1});
+  },[fb]);
+
+  const refreshMarkets=async function(){
+    setMktLoading(true);
+    try{const intel=await api('/api/intel');setLd({news:intel.news,prices:intel.prices,polymarket:intel.polymarket,x:intel.x});}catch(e){}
+    setMktLoading(false);
+  };
+
+  const clearHistory=async function(){await del('/api/history');setHist([]);};
+
+  const wr=fb&&fb.total>0?Math.round((fb.good||0)/fb.total*100):null;
+  const hasLive=!!(ld&&(ld.news||ld.prices));
+  const tierColor=user?TIER_CLR[user.tier]||'var(--tx3)':'var(--tx3)';
+  const usedToday=(usageInfo&&usageInfo.usage_today)||0;
+  const limitToday=(usageInfo&&usageInfo.usage_limit)||3;
+
+  if(screen==='intro')return React.createElement(IntroScreen,{onEnter:function(m){setAuthMode(m);setScreen('auth');}});
+  if(screen==='auth')return React.createElement(AuthScreen,{onLogin:handleLogin,startMode:authMode});
+
+  return(
+    <div className="wrap">
+      {showUpgrade&&React.createElement(UpgradeModal,{onClose:function(){setShowUpgrade(false);}})}
+
+      <div className="hdr">
+        <div><div className="logo">⚡ DARKSTARE</div><span className="logo-v">TRADING BRAIN · v4.0</span></div>
+        <div className={'spill '+(running?'sp-busy':hasLive?'sp-live':'sp-idle')}>
+          {(running||hasLive)&&React.createElement('div',{className:'ldot'})}
+          <span>{running?(step||'ANALYZING'):hasLive?'LIVE':'READY'}</span>
+        </div>
+        <div className="hdr-r">
+          {usageInfo&&<div style={{fontFamily:'var(--fn)',fontSize:8,color:'var(--tx3)',textAlign:'right',lineHeight:1.6}}>
+            <div style={{color:tierColor,fontWeight:700}}>{(user&&user.tier||'free').toUpperCase()}</div>
+            <div>{usedToday}/{limitToday===9999?'∞':limitToday}</div>
+          </div>}
+          <button className="btn bt-gh bt-sm" style={{fontFamily:'var(--fn)',fontSize:8.5}} onClick={function(){clearInterval(timer.current);var n=!auto;setAuto(n);if(n){analyze();timer.current=setInterval(analyze,intv*1000);}}}>{auto?'⏹ STOP':'⏵ AUTO'}</button>
+          <button className="btn bt-gold bt-sm" style={{fontFamily:'var(--fn)',fontSize:9}} onClick={analyze} disabled={running}>{running?React.createElement(Fragment,null,React.createElement(Ldr,{s:11}),' '+(step||'...')):'▶ ANALYZE'}</button>
+          <button className="btn bt-gh bt-xs" onClick={logout} style={{fontFamily:'var(--fn)',fontSize:8.5}} title="Sign out">OUT</button>
+        </div>
+      </div>
+
+      <div className="tkr">
+        <div className="tkr-i">
+          {TK.split(' · ').concat(TK.split(' · ')).map(function(t,i){return React.createElement('span',{key:i,style:{color:i%3===0?'var(--gold)':i%3===1?'var(--grn)':'var(--tx3)',flexShrink:0}},t);})}</div>
+      </div>
+
+      <div className="body">
+        <div className="sbar">
+          {TABS.map(function(t){return React.createElement('div',{key:t.id,className:'nv'+(tab===t.id?' on':''),onClick:function(){setTab(t.id);}},React.createElement('span',{className:'nv-ic'},t.ic),React.createElement('span',{className:'nv-lb'},t.lb));})}</div>
+
+        <div className="main">
+
+          {tab==='dash'&&React.createElement(Fragment,null,
+            React.createElement('div',{className:'g4'},
+              [{l:'Win Rate',v:wr!==null?wr+'%':'—',c:wr>=60?'var(--grn)':wr!==null?'var(--gold)':'var(--tx3)'},{l:'Signals',v:hist.length,c:'var(--blu)'},{l:'Today',v:usedToday+'/'+(limitToday===9999?'∞':limitToday),c:tierColor},{l:'Plan',v:(user&&user.tier||'free').toUpperCase(),c:tierColor}].map(function(s){return React.createElement('div',{key:s.l,className:'stb'},React.createElement('div',{className:'stv',style:{color:s.c,fontSize:17}},s.v),React.createElement('div',{className:'stl'},s.l));})
+            ),
+            !ds&&React.createElement('div',{className:'ibox'},React.createElement('strong',null,'Welcome, '+(user&&user.name)+'!'),' Click ',React.createElement('strong',null,'▶ ANALYZE'),' to run the built-in AI — ',React.createElement('strong',null,'no API keys needed'),'. It fetches live data and generates signals instantly.'),
+            React.createElement('div',{style:{display:'grid',gridTemplateColumns:hasPro?'1fr 1fr 1fr':'1fr 1fr',gap:11}},
+              React.createElement(SigCard,{sig:ds,aiLabel:'⚡ BUILT-IN',aiColor:'23,196,196',onFb:function(t){onFb(ds,t);},onMT5:ds&&!ds.error?function(){post('/api/mt5/signal',ds);}:null}),
+              hasPro&&React.createElement(SigCard,{sig:cs,aiLabel:'◆ CLAUDE',aiColor:'212,160,23',onFb:function(t){onFb(cs,t);}}),
+              hasPro&&React.createElement(SigCard,{sig:gs,aiLabel:'◎ GPT-4o',aiColor:'58,158,221',onFb:function(t){onFb(gs,t);}})
+            ),
+            !hasPro&&React.createElement('div',{style:{background:'var(--s2)',border:'1px solid rgba(212,160,23,.2)',borderRadius:'var(--r3)',padding:14,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}},
+              React.createElement('div',null,React.createElement('div',{style:{fontFamily:'var(--fh)',fontSize:13,fontWeight:700,color:'var(--gold)',marginBottom:3}},'Unlock Claude + GPT-4o'),React.createElement('div',{style:{fontSize:11.5,color:'var(--tx2)'}},'100 analyses/day, AI chat, all pairs')),
+              React.createElement('button',{className:'btn bt-gold',onClick:function(){setShowUpgrade(true);}},'⬆ Upgrade to Pro — $15/mo')
+            ),
+            hist.length>0&&React.createElement('div',{className:'card'},
+              React.createElement('div',{className:'ch'},'🕐 Recent Signals'),
+              React.createElement('div',{style:{overflowX:'auto'}},React.createElement('table',{className:'tbl'},
+                React.createElement('thead',null,React.createElement('tr',null,['Time','AI','Pair','Signal','Conf','Entry','TP'].map(function(h){return React.createElement('th',{key:h},h);}))),
+                React.createElement('tbody',null,hist.slice(-8).reverse().map(function(h,i){return React.createElement('tr',{key:i},
+                  React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:8.5,color:'var(--tx3)'}},h.time),
+                  React.createElement('td',null,React.createElement('span',{className:'tag tg',style:{fontSize:7.5}},h.ai==='darkstare'?'⚡':h.ai==='claude'?'◆':'◎')),
+                  React.createElement('td',{style:{fontFamily:'var(--fn)',fontWeight:700,fontSize:10.5}},h.pair),
+                  React.createElement('td',null,React.createElement('span',{className:'tag '+(h.signal==='BUY'?'tgr':h.signal==='SELL'?'tr':'tb'),style:{fontSize:8.5}},h.signal)),
+                  React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:10.5,color:gc(h.confidence||0)}},h.confidence+'%'),
+                  React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:9.5,color:'var(--tx2)'}},h.entry||'—'),
+                  React.createElement('td',{style:{fontFamily:'var(--fn)',fontSize:9.5,color:'var(--grn)'}},h.takeProfit||'—')
+                );}))
+              ))
+            )
+          )}
+
+          {tab==='signals'&&React.createElement(Fragment,null,
+            React.createElement('div',{className:'card'},
+              React.createElement('div',{className:'ch'},'⚙ Controls'),
+              React.createElement('div',{className:'g2',style:{marginBottom:12,gap:14}},
+                React.createElement('div',null,React.createElement('div',{className:'lbl'},'Pairs'),React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:5,marginTop:5}},
+                  PAIRS_ALL.map(function(p){return React.createElement('span',{key:p,style:{padding:'3px 10px',borderRadius:'100px',fontFamily:'var(--fn)',fontSize:9.5,fontWeight:700,cursor:'pointer',border:'1px solid',transition:'all .13s',background:pairs.includes(p)?'rgba(212,160,23,.12)':'var(--s2)',color:pairs.includes(p)?'var(--gold)':'var(--tx3)',borderColor:pairs.includes(p)?'rgba(212,160,23,.35)':'var(--bd)'},onClick:function(){setPairs(function(v){return v.includes(p)?v.filter(function(x){return x!==p;}):[].concat(v,[p]);});}},p);})
+                )),
+                React.createElement('div',null,React.createElement('div',{className:'lbl'},'Auto: '+intv+'s'),React.createElement('input',{type:'range',min:10,max:120,step:5,value:intv,onChange:function(e){setIntv(+e.target.value);},style:{marginTop:8}}))
+              ),
+              React.createElement('div',{style:{display:'flex',gap:9,alignItems:'center',flexWrap:'wrap'}},
+                React.createElement(Tog,{on:auto,cb:function(v){clearInterval(timer.current);setAuto(v);if(v){analyze();timer.current=setInterval(analyze,intv*1000);}}}),
+                React.createElement('span',{style:{fontSize:11.5,color:'var(--tx2)'}},'Auto '+(auto?'every '+intv+'s':'OFF')),
+                React.createElement('button',{className:'btn bt-gold',style:{marginLeft:'auto'},onClick:analyze,disabled:running},running?React.createElement(Fragment,null,React.createElement(Ldr),' '+(step||'...')):'▶ RUN NOW')
+              )
+            ),
+            React.createElement('div',{style:{display:'grid',gridTemplateColumns:hasPro?'1fr 1fr 1fr':'1fr 1fr',gap:11}},
+              React.createElement(SigCard,{sig:ds,aiLabel:'⚡ BUILT-IN',aiColor:'23,196,196',onFb:function(t){onFb(ds,t);}}),
+              hasPro&&React.createElement(SigCard,{sig:cs,aiLabel:'◆ CLAUDE',aiColor:'212,160,23',onFb:function(t){onFb(cs,t);}}),
+              hasPro&&React.createElement(SigCard,{sig:gs,aiLabel:'◎ GPT-4o',aiColor:'58,158,221',onFb:function(t){onFb(gs,t);}})
+            ),
+            ld&&React.createElement('div',{className:'g2'},
+              ld.news&&React.createElement('div',{className:'card'},React.createElement('div',{className:'ch'},'📰 News ',ld.news.ts&&React.createElement('span',{className:'tag tc'},ld.news.ts)),React.createElement('div',{style:{fontSize:11,color:'var(--tx2)',lineHeight:1.9,whiteSpace:'pre-line'}},ld.news.data)),
+              ld.polymarket&&React.createElement('div',{className:'card'},React.createElement('div',{className:'ch'},'🔮 Polymarket'),React.createElement('div',{style:{fontSize:11,color:'var(--tx2)',lineHeight:2,fontFamily:'var(--fn)',whiteSpace:'pre-line'}},ld.polymarket.data))
+            )
+          )}
+
+          {tab==='chat'&&React.createElement(ChatTab,{liveCtx:(ld&&ld.news&&ld.news.data)||'',user:user})}
+          {tab==='markets'&&React.createElement(MarketsTab,{ld:ld,onRefresh:refreshMarkets,loading:mktLoading})}
+          {tab==='history'&&React.createElement(HistoryTab,{hist:hist,fb:fb,onClear:clearHistory})}
+          {tab==='mt5'&&React.createElement(MT5Tab,{ds:ds,cs:cs,gs:gs,user:user})}
+          {tab==='settings'&&React.createElement(SettingsTab,{user:user,svSt:svSt,onUpgrade:function(){setShowUpgrade(true);},appUrl:appUrl})}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+try{
+  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+}catch(e){
+  document.getElementById('root').innerHTML='<div style="color:#d4a017;font-family:monospace;padding:30px;background:#050a0f;min-height:100vh"><h2 style="margin-bottom:12px">⚠ Startup Error</h2><pre style="color:#e03030;white-space:pre-wrap">'+e.message+'</pre><p style="margin-top:16px;color:#334f66">Make sure server.py is running at localhost:8000</p></div>';
+}
+</script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
+</body>
+</html>
