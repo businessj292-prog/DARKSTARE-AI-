@@ -597,9 +597,7 @@ async def full_intel():
     combined=f"PRICES:\n{prices['data']}\n\nNEWS:\n{news['data']}\n\nPOLYMARKET:\n{poly['data']}\n\nX:\n{x['data']}"
     return JSONResponse({"news":news,"prices":prices,"polymarket":poly,"x":x,"combined":combined,"ts":datetime.now().strftime("%H:%M:%S")})
 
-@app.get("/api/news")
-async def r_news():
-    return JSONResponse(await fetch_news())
+@app.get("/api/news");       async def r_news():   return JSONResponse(await fetch_news())
 @app.get("/api/prices");     async def r_prices():  return JSONResponse(await fetch_prices())
 @app.get("/api/polymarket"); async def r_poly():    return JSONResponse(await fetch_poly())
 @app.get("/api/x");          async def r_x():       return JSONResponse(await fetch_x())
